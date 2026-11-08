@@ -1,0 +1,14 @@
+{
+  "title": "PALM — Create Your Own Reality",
+  "description": "PALM — 技術でまだ見ぬ世界をつくるソフトウェアエンジニアのポートフォリオ。",
+  "language": "ja",
+  "robots": {
+    "index": true
+  },
+  "icons": {
+    "icon": "/favicon.svg"
+  },
+  "accessibility": {
+    "addBypassLinks": true
+  }
+}
