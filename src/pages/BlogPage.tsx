@@ -96,6 +96,7 @@ export default function BlogPage() {
 
       <footer className="blog-footer">
         <a href="/">← RETURN TO BASE REALITY</a>
+        <a className="footer-contact" href="mailto:auematsu7710@gmail.com">CONTACT ↗</a>
         <span>© 2026 PALM</span>
         <span>THINK ARCHIVE // {latestPost.no}</span>
       </footer>
