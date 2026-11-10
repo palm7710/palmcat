@@ -2,7 +2,7 @@ import { lazy, Suspense, useRef, useState } from "react";
 import { BlackCat } from "@/components/cat/BlackCat";
 import { SectionLabel } from "@/components/layout/SectionLabel";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { books, projects, skills, thoughts, type Project } from "@/data/content";
+import { books, projects, thoughts, type Project } from "@/data/content";
 import { useRevealAnimation } from "@/features/reveal/useRevealAnimation";
 import { highlightLayer } from "@/features/system/bus";
 
@@ -165,21 +165,6 @@ export default function HomePage() {
           02 / CAPABILITIES
         </SectionLabel>
         <div className="skills-layout">
-          <div className="skills-list">
-            {skills.map((skill) => (
-              <article
-                className="skill-row reveal"
-                key={skill.name}
-                onMouseEnter={() => highlightLayer(skill.layer)}
-                onMouseLeave={() => highlightLayer(null)}
-              >
-                <span>{skill.no}</span>
-                <h3>{skill.name}</h3>
-                <p>{skill.description}</p>
-                <b>↗</b>
-              </article>
-            ))}
-          </div>
           <aside className="system-map reveal">
             <div className="system-copy">
               <span className="system-kicker">
