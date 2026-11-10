@@ -224,6 +224,8 @@ button, a, [role='button'] { -webkit-tap-highlight-color: transparent; }
 .post-copy h3 { margin: 0; color: var(--gray); font-size: clamp(14px,1.35vw,21px); letter-spacing: -.02em; }
 .post-copy p { max-width: 570px; margin-top: 28px; color: #858585; font-size: 11px; line-height: 1.8; }
 .post-action { display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; height: 100%; color: var(--gray); }
+.post-stats { display: grid; gap: 8px; text-align: right; }
+.post-stats span:last-child { color: #f5f5f5; }
 .post-action a { display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid var(--line); color: var(--yellow); font-size: 18px; transition: .2s; }
 .post-action a:hover { color: #090909; background: var(--yellow); border-color: var(--yellow); }
 
@@ -251,7 +253,7 @@ button, a, [role='button'] { -webkit-tap-highlight-color: transparent; }
 .blog-post { width: min(1180px,94vw); margin: 0 auto; padding: 150px 0 100px; }
 .post-back { display: inline-block; margin-bottom: 65px; color: var(--yellow); font: 600 10px 'IBM Plex Mono',monospace; letter-spacing: .12em; }
 .post-header { padding-bottom: 70px; border-bottom: 1px solid var(--line); }
-.post-header-meta { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 20px; color: var(--gray); font: 500 10px 'IBM Plex Mono',monospace; letter-spacing: .12em; }
+.post-header-meta { display: grid; grid-template-columns: 1fr 1fr 1fr auto auto; gap: 20px; color: var(--gray); font: 500 10px 'IBM Plex Mono',monospace; letter-spacing: .12em; }
 .post-header-meta span:first-child, .post-header-meta span:nth-child(2) { color: var(--yellow); }
 .post-header h1 { max-width: 1000px; margin: 80px 0 22px; font-size: clamp(48px,8vw,125px); line-height: .9; letter-spacing: -.065em; }
 .post-header h2 { margin: 0; color: var(--gray); font-size: clamp(20px,2.3vw,36px); letter-spacing: -.035em; }
@@ -338,7 +340,7 @@ button, a, [role='button'] { -webkit-tap-highlight-color: transparent; }
   .post-copy h3 { font-size: 3.2vw; line-height: 1.3; }
   .post-copy p { display: none; }
   .post-action { grid-column: 3; }
-  .post-action > span { display: none; }
+  .post-stats { display: none; }
   .blog-manifesto { padding: 90px 20px; }
   .blog-manifesto h2 { font-size: 14vw; }
   .signal { display: block; padding: 90px 20px; }
