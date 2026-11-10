@@ -67,8 +67,8 @@ export const posts: Post[] = [
     no: '0005',
     category: 'BOOKS',
     date: '2026.11.10',
-    title: '未来思考｜未来を考える五つの技法',
-    titleEn: 'FUTURE THINKING — FIVE METHODS FOR THINKING ABOUT THE FUTURE',
+    title: '読書記録｜未来を考える五つの技法',
+    titleEn: 'READING NOTES — FIVE METHODS FOR THINKING ABOUT THE FUTURE',
     summary: '未来を考えるための「歴史・予兆・構造・蓋然・想定」という五つの技法を、先人たちの言葉とともに整理します。',
     keywords: ['未来思考', '未来予測', 'シナリオプランニング', '歴史', '予兆', '構造', '蓋然性'],
     keyPoints: [
@@ -131,8 +131,8 @@ export const posts: Post[] = [
     no: '0004',
     category: 'BOOKS',
     date: '2026.11.09',
-    title: '読書と思考｜熱狂的ファンをつくる顧客サービス',
-    titleEn: 'READING & THINKING — BUILDING RAVING FANS THROUGH CUSTOMER SERVICE',
+    title: '読書記録｜熱狂的ファンをつくる顧客サービス',
+    titleEn: 'READING NOTES — BUILDING RAVING FANS THROUGH CUSTOMER SERVICE',
     summary: '顧客を満足させるだけでなく、熱狂的ファンになってもらうための、サービスの決め方・見極め方・提供方法を学びました。',
     keywords: ['顧客サービス', '熱狂的ファン', '顧客体験', 'サービス設計', '読書記録'],
     keyPoints: [
@@ -168,8 +168,8 @@ export const posts: Post[] = [
     no: '0003',
     category: 'BOOKS',
     date: '2026.11.08',
-    title: '読書と思考｜サム・アルトマンと『ゼロ・トゥ・ワン』',
-    titleEn: 'READING & THINKING — SAM ALTMAN AND ZERO TO ONE',
+    title: '読書記録｜サム・アルトマンと『ゼロ・トゥ・ワン』',
+    titleEn: 'READING NOTES — SAM ALTMAN AND ZERO TO ONE',
     summary: '『サム・アルトマン』と『ゼロ・トゥ・ワン』を読み、AI、超知能、独占と独自性について考えました。',
     keywords: ['サム・アルトマン', 'ゼロ・トゥ・ワン', 'AI', '超知能', '独占', 'スタートアップ'],
     keyPoints: [
@@ -199,8 +199,8 @@ export const posts: Post[] = [
     no: '0002',
     category: 'BOOKS',
     date: '2026.11.01',
-    title: '読書と思考｜元素と起業家について学んだ日',
-    titleEn: 'READING & THINKING — A DAY OF LEARNING ABOUT ELEMENTS AND ENTREPRENEURS',
+    title: '読書記録｜元素と起業家について学んだ日',
+    titleEn: 'READING NOTES — A DAY OF LEARNING ABOUT ELEMENTS AND ENTREPRENEURS',
     summary: '化学図鑑と『サム・アルトマン』を読み、元素と起業家について学んだことを記録しました。',
     keywords: ['化学', '元素', '原子', 'サム・アルトマン', 'ポール・グレアム', '読書記録'],
     keyPoints: [
