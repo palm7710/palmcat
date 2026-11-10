@@ -306,7 +306,7 @@ export default function HomePage() {
             <br />
             WORTH BUILDING?
           </p>
-          <a href="mailto:hello@blackcat.dev">
+          <a href="mailto:auematsu7710@gmail.com">
             LET&apos;S CREATE
             <br />
             <em>REALITY.</em> ↗
@@ -314,6 +314,9 @@ export default function HomePage() {
         </div>
         <div className="footer-row">
           <div>
+            <a className="footer-contact" href="mailto:auematsu7710@gmail.com">
+              CONTACT ↗
+            </a>
             <a
               href="https://github.com/palm7710"
               target="_blank"
