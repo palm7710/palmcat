@@ -254,7 +254,7 @@ export default function WorksPage() {
             <br />
             FROM 2027.04 — MOBILE / BACKEND
           </p>
-          <a href="mailto:hello@blackcat.dev">
+          <a href="mailto:auematsu7710@gmail.com">
             LET&apos;S BUILD
             <br />
             <em>TOGETHER.</em> ↗
@@ -262,6 +262,9 @@ export default function WorksPage() {
         </div>
         <div className="footer-row">
           <div>
+            <a className="footer-contact" href="mailto:auematsu7710@gmail.com">
+              CONTACT ↗
+            </a>
             <a href="https://www.wantedly.com/id/ayaka_uematsu8" target="_blank" rel="noreferrer">
               WANTEDLY ↗
             </a>
