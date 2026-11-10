@@ -7,8 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit",
-    "check": "npm run typecheck && npm run build",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.worker.json",
+    "types:check": "wrangler types --check",
+    "check": "npm run types:check && npm run typecheck && npm run build",
     "format": "oxfmt"
   },
   "dependencies": {
