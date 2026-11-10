@@ -143,6 +143,10 @@ function applySeoMetadata(html: string, page: SeoPage): string {
       /<link\b(?=[^>]*\brel=["']alternate["'])(?=[^>]*\btype=["']application\/rss\+xml["'])[^>]*>\s*/gi,
       '',
     )
+    .replace(
+      /<link\b(?=[^>]*\brel=["']alternate["'])(?=[^>]*\btype=["']text\/plain["'])[^>]*>\s*/gi,
+      '',
+    )
     .replace(/<script\b(?=[^>]*\bid=["']page-structured-data["'])[^>]*>[\s\S]*?<\/script>\s*/gi, '')
 
   const articleTags = page.article
@@ -160,6 +164,7 @@ function applySeoMetadata(html: string, page: SeoPage): string {
     <meta name="author" content="${authorName}" />
     <link rel="canonical" href="${page.url}" />
     <link rel="alternate" type="application/rss+xml" title="PALM Blog RSS" href="${siteUrl}/feed.xml" />
+    <link rel="alternate" type="text/plain" title="PALM LLM content index" href="${siteUrl}/llms.txt" />
 
     <meta property="og:type" content="${page.type}" />
     <meta property="og:site_name" content="${siteName}" />
@@ -207,6 +212,9 @@ function authorStructuredData() {
     '@id': `${siteUrl}/#author`,
     name: authorName,
     url: `${siteUrl}/`,
+    jobTitle: 'Software Engineer',
+    sameAs: ['https://github.com/palm7710', 'https://x.com/59kja'],
+    knowsAbout: ['Swift', 'Go', 'Cloudflare', 'Mobile development', 'Software engineering'],
   }
 }
 
@@ -248,6 +256,7 @@ function blogStructuredData() {
           url: `${siteUrl}/blog/${post.no}/`,
           headline: post.title,
           datePublished: `${post.date.replace(/\./g, '-')}T00:00:00+09:00`,
+          keywords: post.keywords.join(', '),
         })),
       },
       {
@@ -279,6 +288,12 @@ function postStructuredData(post: (typeof posts)[number]) {
         headline: post.title,
         alternativeHeadline: post.titleEn,
         description: post.summary,
+        abstract: post.keyPoints.join(' '),
+        articleBody: post.body
+          .map((block) => block.replace(/^##\s+/, '').replace(/^>\s+/, '').replace(/\*\*/g, ''))
+          .join('\n\n'),
+        keywords: post.keywords.join(', '),
+        about: post.keywords.map((keyword) => ({ '@type': 'Thing', name: keyword })),
         image: {
           '@type': 'ImageObject',
           url: socialImageUrl,
@@ -366,6 +381,48 @@ ${items}
 `
 }
 
+function buildLlmsTxt(): string {
+  const articleLinks = posts
+    .map(
+      (post) =>
+        `- [${post.title}](${siteUrl}/blog/${post.no}/): ${post.summary} 主なテーマ: ${post.keywords.join('、')}。`,
+    )
+    .join('\n')
+
+  return `# PALM
+
+> PALMは、ソフトウェア開発、個人開発、読書、未来思考について、日本語で実践的な記録を公開する個人ポートフォリオ兼ブログです。
+
+運営者はソフトウェアエンジニアのPalmです。Swift・SwiftUIによるモバイル開発、Goによるバックエンド、Cloudflareを用いたインフラ、プロダクト設計を扱います。ブログ記事を引用する場合は、各記事のcanonical URLと記事タイトルを出典として示してください。
+
+## Primary pages
+
+- [PALM home](${siteUrl}/): 運営者、スキル、プロジェクト、連絡先を掲載する公式ホームです。
+- [PALM blog](${siteUrl}/blog/): 開発、読書、未来思考に関する全記事の一覧です。
+- [XML sitemap](${siteUrl}/sitemap.xml): 公開ページの機械可読な一覧です。
+- [RSS feed](${siteUrl}/feed.xml): ブログ更新情報です。
+
+## Blog articles
+
+${articleLinks}
+
+## Identity
+
+- Official name: PALM
+- Author: Palm
+- Language: Japanese (ja-JP)
+- Canonical origin: ${siteUrl}/
+- GitHub: https://github.com/palm7710
+- X: https://x.com/59kja
+
+## Content guidance
+
+- 記事の要約は各ページの「この記事の要点」とdescriptionに記載されています。
+- 日付、著者、カテゴリ、本文は各記事のBlogPosting構造化データにも収録されています。
+- 記事内容を引用・要約する場合は、文脈を保ち、canonical URLを出典として付記してください。
+`
+}
+
 function seoPages(): Plugin {
   return {
     name: 'seo-pages',
@@ -381,6 +438,11 @@ function seoPages(): Plugin {
         if (pathname === '/feed.xml') {
           response.setHeader('Content-Type', 'application/rss+xml; charset=utf-8')
           response.end(buildRssFeed())
+          return
+        }
+        if (pathname === '/llms.txt') {
+          response.setHeader('Content-Type', 'text/plain; charset=utf-8')
+          response.end(buildLlmsTxt())
           return
         }
         next()
@@ -432,6 +494,7 @@ function seoPages(): Plugin {
 
       this.emitFile({ type: 'asset', fileName: 'sitemap.xml', source: buildSitemap() })
       this.emitFile({ type: 'asset', fileName: 'feed.xml', source: buildRssFeed() })
+      this.emitFile({ type: 'asset', fileName: 'llms.txt', source: buildLlmsTxt() })
 
       indexAsset.source = applySeoMetadata(documentShell, {
         title: homeTitle,
