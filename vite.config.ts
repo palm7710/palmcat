@@ -23,7 +23,7 @@ export default defineConfig(({ mode }) => {
 react(),
       tailwindcss(),
       figmaSiteConfiguration(siteConfiguration),
-      socialMetadataPages(),
+      seoPages(),
       figmaErrorOverlayReplay(),
       figmaReactRefreshBoundaryFallback(),
       figmaMakeKitPlugin({ storiesGlob: '/src/**/*.stories.{ts,tsx,js,jsx}' }),
@@ -53,6 +53,27 @@ react(),
 
 const siteUrl = 'https://palmcat.dev'
 const socialImageUrl = `${siteUrl}/og-image.png?v=20261102`
+const siteName = 'PALM'
+const authorName = 'Palm'
+const twitterHandle = '@59kja'
+const homeTitle = 'PALM — Create Your Own Reality'
+const homeDescription = 'PALM — 技術でまだ見ぬ世界をつくるソフトウェアエンジニアのポートフォリオ。'
+const blogTitle = 'THINK / PALM — 学びと個人開発の記録'
+const blogDescription = 'ソフトウェア開発、読書、未来思考、個人開発を通して得た学びと問いを記録するPALMのブログ。'
+
+type SeoPage = {
+  title: string
+  description: string
+  url: string
+  type: 'website' | 'article'
+  imageAlt: string
+  structuredData: object
+  article?: {
+    publishedTime: string
+    modifiedTime: string
+    section: string
+  }
+}
 
 function escapeHtmlAttribute(value: string): string {
   return value
@@ -62,42 +83,332 @@ function escapeHtmlAttribute(value: string): string {
     .replace(/>/g, '&gt;')
 }
 
-function replaceMetaTag(html: string, attribute: 'name' | 'property', key: string, content: string): string {
-  const pattern = new RegExp(`<meta\\s+${attribute}=["']${key.replace(/:/g, '\\:')}["'][^>]*>`, 'gi')
-  return html.replace(pattern, `<meta ${attribute}="${key}" content="${escapeHtmlAttribute(content)}">`)
+function escapeXml(value: string): string {
+  return escapeHtmlAttribute(value).replace(/'/g, '&apos;')
 }
 
-function socialMetadataPages(): Plugin {
+function removeMetaTag(html: string, attribute: 'name' | 'property', key: string): string {
+  const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const pattern = new RegExp(
+    `<meta\\b(?=[^>]*\\b${attribute}=["']${escapedKey}["'])[^>]*>\\s*`,
+    'gi',
+  )
+  return html.replace(pattern, '')
+}
+
+function serializeStructuredData(data: object): string {
+  return JSON.stringify(data).replace(/</g, '\\u003c')
+}
+
+function applySeoMetadata(html: string, page: SeoPage): string {
+  const nameTags = [
+    'description',
+    'robots',
+    'author',
+    'twitter:card',
+    'twitter:site',
+    'twitter:creator',
+    'twitter:title',
+    'twitter:description',
+    'twitter:image',
+    'twitter:image:alt',
+  ]
+  const propertyTags = [
+    'og:type',
+    'og:site_name',
+    'og:locale',
+    'og:url',
+    'og:title',
+    'og:description',
+    'og:image',
+    'og:image:secure_url',
+    'og:image:type',
+    'og:image:width',
+    'og:image:height',
+    'og:image:alt',
+    'article:published_time',
+    'article:modified_time',
+    'article:section',
+    'article:author',
+  ]
+
+  let result = html
+  for (const name of nameTags) result = removeMetaTag(result, 'name', name)
+  for (const property of propertyTags) result = removeMetaTag(result, 'property', property)
+
+  result = result
+    .replace(/<title>[\s\S]*?<\/title>\s*/i, '')
+    .replace(/<link\b(?=[^>]*\brel=["']canonical["'])[^>]*>\s*/gi, '')
+    .replace(
+      /<link\b(?=[^>]*\brel=["']alternate["'])(?=[^>]*\btype=["']application\/rss\+xml["'])[^>]*>\s*/gi,
+      '',
+    )
+    .replace(/<script\b(?=[^>]*\bid=["']page-structured-data["'])[^>]*>[\s\S]*?<\/script>\s*/gi, '')
+
+  const articleTags = page.article
+    ? `
+    <meta property="article:published_time" content="${page.article.publishedTime}" />
+    <meta property="article:modified_time" content="${page.article.modifiedTime}" />
+    <meta property="article:section" content="${escapeHtmlAttribute(page.article.section)}" />
+    <meta property="article:author" content="${siteUrl}/" />`
+    : ''
+
+  const metadata = `
+    <title>${escapeHtmlAttribute(page.title)}</title>
+    <meta name="description" content="${escapeHtmlAttribute(page.description)}" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="author" content="${authorName}" />
+    <link rel="canonical" href="${page.url}" />
+    <link rel="alternate" type="application/rss+xml" title="PALM Blog RSS" href="${siteUrl}/feed.xml" />
+
+    <meta property="og:type" content="${page.type}" />
+    <meta property="og:site_name" content="${siteName}" />
+    <meta property="og:locale" content="ja_JP" />
+    <meta property="og:url" content="${page.url}" />
+    <meta property="og:title" content="${escapeHtmlAttribute(page.title)}" />
+    <meta property="og:description" content="${escapeHtmlAttribute(page.description)}" />
+    <meta property="og:image" content="${socialImageUrl}" />
+    <meta property="og:image:secure_url" content="${socialImageUrl}" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="${escapeHtmlAttribute(page.imageAlt)}" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="${twitterHandle}" />
+    <meta name="twitter:creator" content="${twitterHandle}" />
+    <meta name="twitter:title" content="${escapeHtmlAttribute(page.title)}" />
+    <meta name="twitter:description" content="${escapeHtmlAttribute(page.description)}" />
+    <meta name="twitter:image" content="${socialImageUrl}" />
+    <meta name="twitter:image:alt" content="${escapeHtmlAttribute(page.imageAlt)}" />${articleTags}
+
+    <script id="page-structured-data" type="application/ld+json">${serializeStructuredData(page.structuredData)}</script>
+  `
+
+  return result.replace('</head>', `${metadata}</head>`)
+}
+
+function publisherStructuredData() {
   return {
-    name: 'social-metadata-pages',
-    apply: 'build',
+    '@type': 'Organization',
+    '@id': `${siteUrl}/#organization`,
+    name: siteName,
+    url: `${siteUrl}/`,
+    logo: {
+      '@type': 'ImageObject',
+      url: `${siteUrl}/favicon.svg`,
+    },
+  }
+}
+
+function authorStructuredData() {
+  return {
+    '@type': 'Person',
+    '@id': `${siteUrl}/#author`,
+    name: authorName,
+    url: `${siteUrl}/`,
+  }
+}
+
+function homeStructuredData() {
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'WebSite',
+        '@id': `${siteUrl}/#website`,
+        url: `${siteUrl}/`,
+        name: siteName,
+        description: homeDescription,
+        inLanguage: 'ja-JP',
+        publisher: { '@id': `${siteUrl}/#organization` },
+      },
+      publisherStructuredData(),
+      authorStructuredData(),
+    ],
+  }
+}
+
+function blogStructuredData() {
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': ['Blog', 'CollectionPage'],
+        '@id': `${siteUrl}/blog/#blog`,
+        url: `${siteUrl}/blog/`,
+        name: blogTitle,
+        description: blogDescription,
+        inLanguage: 'ja-JP',
+        publisher: { '@id': `${siteUrl}/#organization` },
+        author: { '@id': `${siteUrl}/#author` },
+        blogPost: posts.map((post) => ({
+          '@type': 'BlogPosting',
+          '@id': `${siteUrl}/blog/${post.no}/#article`,
+          url: `${siteUrl}/blog/${post.no}/`,
+          headline: post.title,
+          datePublished: `${post.date.replace(/\./g, '-')}T00:00:00+09:00`,
+        })),
+      },
+      {
+        '@type': 'BreadcrumbList',
+        '@id': `${siteUrl}/blog/#breadcrumb`,
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'HOME', item: `${siteUrl}/` },
+          { '@type': 'ListItem', position: 2, name: 'BLOG', item: `${siteUrl}/blog/` },
+        ],
+      },
+      publisherStructuredData(),
+      authorStructuredData(),
+    ],
+  }
+}
+
+function postStructuredData(post: (typeof posts)[number]) {
+  const url = `${siteUrl}/blog/${post.no}/`
+  const publishedTime = `${post.date.replace(/\./g, '-')}T00:00:00+09:00`
+
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'BlogPosting',
+        '@id': `${url}#article`,
+        url,
+        mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+        headline: post.title,
+        alternativeHeadline: post.titleEn,
+        description: post.summary,
+        image: {
+          '@type': 'ImageObject',
+          url: socialImageUrl,
+          width: 1200,
+          height: 630,
+        },
+        datePublished: publishedTime,
+        dateModified: publishedTime,
+        author: { '@id': `${siteUrl}/#author` },
+        publisher: { '@id': `${siteUrl}/#organization` },
+        articleSection: post.category,
+        inLanguage: 'ja-JP',
+        wordCount: post.body.join('').length,
+        isPartOf: { '@id': `${siteUrl}/blog/#blog` },
+      },
+      {
+        '@type': 'BreadcrumbList',
+        '@id': `${url}#breadcrumb`,
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'HOME', item: `${siteUrl}/` },
+          { '@type': 'ListItem', position: 2, name: 'BLOG', item: `${siteUrl}/blog/` },
+          { '@type': 'ListItem', position: 3, name: post.title, item: url },
+        ],
+      },
+      publisherStructuredData(),
+      authorStructuredData(),
+    ],
+  }
+}
+
+function buildSitemap(): string {
+  const latestDate = posts[0]?.date.replace(/\./g, '-') ?? '2026-11-10'
+  const pages = [
+    { url: `${siteUrl}/`, lastModified: latestDate },
+    { url: `${siteUrl}/blog/`, lastModified: latestDate },
+    ...posts.map((post) => ({
+      url: `${siteUrl}/blog/${post.no}/`,
+      lastModified: post.date.replace(/\./g, '-'),
+    })),
+  ]
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${pages
+  .map(
+    (page) => `  <url>
+    <loc>${escapeXml(page.url)}</loc>
+    <lastmod>${page.lastModified}</lastmod>
+  </url>`,
+  )
+  .join('\n')}
+</urlset>
+`
+}
+
+function buildRssFeed(): string {
+  const items = posts
+    .map((post) => {
+      const url = `${siteUrl}/blog/${post.no}/`
+      const published = new Date(`${post.date.replace(/\./g, '-')}T00:00:00+09:00`).toUTCString()
+
+      return `    <item>
+      <title>${escapeXml(post.title)}</title>
+      <link>${escapeXml(url)}</link>
+      <guid isPermaLink="true">${escapeXml(url)}</guid>
+      <description>${escapeXml(post.summary)}</description>
+      <category>${escapeXml(post.category)}</category>
+      <dc:creator>${authorName}</dc:creator>
+      <pubDate>${published}</pubDate>
+    </item>`
+    })
+    .join('\n')
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>${escapeXml(blogTitle)}</title>
+    <link>${siteUrl}/blog/</link>
+    <description>${escapeXml(blogDescription)}</description>
+    <language>ja-JP</language>
+    <atom:link href="${siteUrl}/feed.xml" rel="self" type="application/rss+xml" />
+${items}
+  </channel>
+</rss>
+`
+}
+
+function seoPages(): Plugin {
+  return {
+    name: 'seo-pages',
     enforce: 'post',
+    configureServer(server) {
+      server.middlewares.use((request, response, next) => {
+        const pathname = request.url?.split('?')[0]
+        if (pathname === '/sitemap.xml') {
+          response.setHeader('Content-Type', 'application/xml; charset=utf-8')
+          response.end(buildSitemap())
+          return
+        }
+        if (pathname === '/feed.xml') {
+          response.setHeader('Content-Type', 'application/rss+xml; charset=utf-8')
+          response.end(buildRssFeed())
+          return
+        }
+        next()
+      })
+    },
     generateBundle(_, bundle) {
       const indexAsset = bundle['index.html']
       if (!indexAsset || indexAsset.type !== 'asset' || typeof indexAsset.source !== 'string') return
 
+      const documentShell = indexAsset.source
+
       for (const post of posts) {
         const url = `${siteUrl}/blog/${post.no}/`
         const title = `${post.title} / PALM`
-        const publishedTime = `${post.date.replace(/\./g, '-') }T00:00:00+09:00`
-        let html = indexAsset.source
-
-        html = html.replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeHtmlAttribute(title)}</title>`)
-        html = html.replace(/<link\s+rel=["']canonical["'][^>]*>/gi, `<link rel="canonical" href="${url}">`)
-        html = replaceMetaTag(html, 'name', 'description', post.summary)
-        html = replaceMetaTag(html, 'property', 'og:type', 'article')
-        html = replaceMetaTag(html, 'property', 'og:url', url)
-        html = replaceMetaTag(html, 'property', 'og:title', title)
-        html = replaceMetaTag(html, 'property', 'og:description', post.summary)
-        html = replaceMetaTag(html, 'property', 'og:image', socialImageUrl)
-        html = replaceMetaTag(html, 'property', 'og:image:secure_url', socialImageUrl)
-        html = replaceMetaTag(html, 'name', 'twitter:title', title)
-        html = replaceMetaTag(html, 'name', 'twitter:description', post.summary)
-        html = replaceMetaTag(html, 'name', 'twitter:image', socialImageUrl)
-        html = html.replace(
-          '</head>',
-          `    <meta property="article:published_time" content="${publishedTime}">\n  </head>`,
-        )
+        const publishedTime = `${post.date.replace(/\./g, '-')}T00:00:00+09:00`
+        const html = applySeoMetadata(documentShell, {
+          title,
+          description: post.summary,
+          url,
+          type: 'article',
+          imageAlt: `${post.title} — PALM`,
+          structuredData: postStructuredData(post),
+          article: {
+            publishedTime,
+            modifiedTime: publishedTime,
+            section: post.category,
+          },
+        })
 
         this.emitFile({
           type: 'asset',
@@ -105,6 +416,31 @@ function socialMetadataPages(): Plugin {
           source: html,
         })
       }
+
+      this.emitFile({
+        type: 'asset',
+        fileName: 'blog/index.html',
+        source: applySeoMetadata(documentShell, {
+          title: blogTitle,
+          description: blogDescription,
+          url: `${siteUrl}/blog/`,
+          type: 'website',
+          imageAlt: '黒猫と蝶をあしらったPALMブログ',
+          structuredData: blogStructuredData(),
+        }),
+      })
+
+      this.emitFile({ type: 'asset', fileName: 'sitemap.xml', source: buildSitemap() })
+      this.emitFile({ type: 'asset', fileName: 'feed.xml', source: buildRssFeed() })
+
+      indexAsset.source = applySeoMetadata(documentShell, {
+        title: homeTitle,
+        description: homeDescription,
+        url: `${siteUrl}/`,
+        type: 'website',
+        imageAlt: '黒猫と蝶をあしらったPALMのソフトウェアエンジニア・ポートフォリオ',
+        structuredData: homeStructuredData(),
+      })
     },
   }
 }
