@@ -1,15 +1,69 @@
-import { lazy, Suspense, useRef } from "react";
+import { lazy, Suspense, useRef, useState } from "react";
 import { BlackCat } from "@/components/cat/BlackCat";
 import { SectionLabel } from "@/components/layout/SectionLabel";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { books, projects, skills, thoughts } from "@/data/content";
+import { books, projects, skills, thoughts, type Project } from "@/data/content";
 import { useRevealAnimation } from "@/features/reveal/useRevealAnimation";
+import { highlightLayer } from "@/features/system/bus";
 
 const CityScene = lazy(() =>
   import("@/features/city/CityScene").then((module) => ({
     default: module.CityScene,
   })),
 );
+
+// 3D パーツは three.js を含むので遅延読み込み（読み込み前・WebGL 非対応時は CSS の表示が残る）
+const DeviceShowcase = lazy(() =>
+  import("@/features/devices/DeviceShowcase").then((module) => ({
+    default: module.DeviceShowcase,
+  })),
+);
+const SystemMap = lazy(() =>
+  import("@/features/system/SystemMap").then((module) => ({
+    default: module.SystemMap,
+  })),
+);
+
+const SYSTEM_LAYERS = [
+  { id: "L1", name: "INTERFACE", tech: "Swift · SwiftUI · Kotlin" },
+  { id: "L2", name: "SERVICE", tech: "Go · REST · GitHub API" },
+  { id: "L3", name: "INFRASTRUCTURE", tech: "Cloudflare · VPS · Linux" },
+];
+
+function ProjectCard({ project }: { project: Project }) {
+  const [card, setCard] = useState<HTMLElement | null>(null);
+  return (
+    <article
+      ref={setCard}
+      className={`project-card reveal ${project.className}`}
+    >
+      <div className="project-top">
+        <span>{project.no}</span>
+        <span>{project.type}</span>
+      </div>
+      <div className="project-visual">
+        <i aria-hidden="true" />
+        <i aria-hidden="true" />
+        <i aria-hidden="true" />
+        <Suspense fallback={null}>
+          <DeviceShowcase devices={project.devices} interactionRoot={card} />
+        </Suspense>
+        <span className="drag-hint" aria-hidden="true">
+          DRAG TO ROTATE ⟲
+        </span>
+      </div>
+      <h3>
+        {project.title.split("\n").map((line) => (
+          <span key={line}>{line}</span>
+        ))}
+      </h3>
+      <p>{project.copy}</p>
+      <div className="project-stack">
+        {project.stack} <b>VIEW CASE ↗</b>
+      </div>
+    </article>
+  );
+}
 
 export default function HomePage() {
   const experience = useRef<HTMLElement>(null);
@@ -110,15 +164,63 @@ export default function HomePage() {
         <SectionLabel detail="THE TOOL IS NOT THE MISSION">
           02 / CAPABILITIES
         </SectionLabel>
-        <div className="skills-list">
-          {skills.map((skill) => (
-            <article className="skill-row reveal" key={skill.name}>
-              <span>{skill.no}</span>
-              <h3>{skill.name}</h3>
-              <p>{skill.description}</p>
-              <b>↗</b>
-            </article>
-          ))}
+        <div className="skills-layout">
+          <div className="skills-list">
+            {skills.map((skill) => (
+              <article
+                className="skill-row reveal"
+                key={skill.name}
+                onMouseEnter={() => highlightLayer(skill.layer)}
+                onMouseLeave={() => highlightLayer(null)}
+              >
+                <span>{skill.no}</span>
+                <h3>{skill.name}</h3>
+                <p>{skill.description}</p>
+                <b>↗</b>
+              </article>
+            ))}
+          </div>
+          <aside className="system-map reveal">
+            <div className="system-copy">
+              <span className="system-kicker">
+                <i /> SYSTEM MAP / LIVE
+              </span>
+              <h3>
+                ONE ENGINEER,
+                <br />
+                <em>EVERY LAYER.</em>
+              </h3>
+              <p>
+                UIからAPI、インフラまで。ひとつのプロダクトを縦に貫いて設計・実装しています。
+              </p>
+            </div>
+            <div className="system-stage">
+              <div className="system-fallback" aria-hidden="true">
+                <i />
+                <i />
+                <i />
+              </div>
+              <Suspense fallback={null}>
+                <SystemMap />
+              </Suspense>
+            </div>
+            <ol className="system-legend">
+              {SYSTEM_LAYERS.map((layer, index) => (
+                <li
+                  key={layer.id}
+                  tabIndex={0}
+                  onMouseEnter={() => highlightLayer(index)}
+                  onMouseLeave={() => highlightLayer(null)}
+                  onFocus={() => highlightLayer(index)}
+                  onBlur={() => highlightLayer(null)}
+                >
+                  <span>{layer.id}</span>
+                  <b>{layer.name}</b>
+                  <small>{layer.tech}</small>
+                </li>
+              ))}
+            </ol>
+          </aside>
         </div>
       </section>
 
@@ -128,31 +230,15 @@ export default function HomePage() {
         </SectionLabel>
         <div className="project-grid">
           {projects.map((project) => (
-            <article
-              className={`project-card reveal ${project.className}`}
-              key={project.no}
-            >
-              <div className="project-top">
-                <span>{project.no}</span>
-                <span>{project.type}</span>
-              </div>
-              <div className="project-visual" aria-hidden="true">
-                <i />
-                <i />
-                <i />
-              </div>
-              <h3>
-                {project.title.split("\n").map((line) => (
-                  <span key={line}>{line}</span>
-                ))}
-              </h3>
-              <p>{project.copy}</p>
-              <div className="project-stack">
-                {project.stack} <b>VIEW CASE ↗</b>
-              </div>
-            </article>
+            <ProjectCard project={project} key={project.no} />
           ))}
         </div>
+        <a className="all-works reveal" href="/works">
+          <span>ARCHIVE / 08 PROJECTS · 06 AWARDS</span>
+          <strong>
+            VIEW ALL WORKS <em>↗</em>
+          </strong>
+        </a>
       </section>
 
       <section id="think" className="section philosophy">
