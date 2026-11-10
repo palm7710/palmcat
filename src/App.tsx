@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
 const HomePage = lazy(() => import('@/pages/HomePage'))
 const BlogPage = lazy(() => import('@/pages/BlogPage'))
+const WorksPage = lazy(() => import('@/pages/WorksPage'))
 const BlogPostPage = lazy(() => import('@/pages/BlogPostPage'))
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'))
 
@@ -20,6 +21,7 @@ export default function App() {
       <Suspense fallback={<RouteFallback />}>
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/works" element={<WorksPage />} />
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/blog/:postNo" element={<BlogPostPage />} />
           <Route path="*" element={<NotFoundPage />} />
