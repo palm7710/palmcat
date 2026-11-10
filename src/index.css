@@ -257,6 +257,12 @@ button, a, [role='button'] { -webkit-tap-highlight-color: transparent; }
 .post-header h2 { margin: 0; color: var(--gray); font-size: clamp(20px,2.3vw,36px); letter-spacing: -.035em; }
 .post-header > p { max-width: 680px; margin: 55px 0 0; color: #aaa; font-size: 14px; line-height: 2; }
 .post-body { max-width: 720px; margin: 90px auto; }
+.post-key-points { margin: 0 0 72px; padding: 30px 32px 32px; border: 1px solid var(--line); background: #101010; }
+.post-key-points > span { color: var(--yellow); font: 600 10px 'IBM Plex Mono',monospace; letter-spacing: .14em; }
+.post-key-points h2 { margin: 14px 0 22px; color: #fff; font-size: clamp(24px,2.5vw,36px); letter-spacing: -.035em; }
+.post-key-points ul { display: grid; gap: 14px; margin: 0; padding: 0; list-style: none; }
+.post-key-points li { position: relative; padding-left: 24px; color: #d0d0d0; font-size: clamp(14px,1.1vw,17px); line-height: 1.9; }
+.post-key-points li::before { position: absolute; top: 0; left: 0; color: var(--yellow); content: '→'; }
 .post-body h3 { margin: 72px 0 24px; color: var(--yellow); font-size: clamp(24px,2.5vw,36px); letter-spacing: -.035em; }
 .post-body h3:first-child { margin-top: 0; }
 .post-body p { margin: 0 0 34px; color: #d0d0d0; font-size: clamp(15px,1.2vw,18px); line-height: 2.1; }
@@ -347,6 +353,7 @@ button, a, [role='button'] { -webkit-tap-highlight-color: transparent; }
   .post-header h1 { margin-top: 55px; font-size: 14vw; }
   .post-header > p { margin-top: 35px; }
   .post-body { margin: 60px 0; }
+  .post-key-points { margin-bottom: 55px; padding: 24px 20px; }
   .post-end { flex-direction: column; gap: 20px; }
 }
 
