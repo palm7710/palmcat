@@ -552,3 +552,17 @@ button, a, [role='button'] { -webkit-tap-highlight-color: transparent; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ===== 背景の街（光るライン）をページ全体に見せる ===== */
+.city { opacity: 1; }
+.about, .skills, .work, .library, .contact,
+.works-featured, .works-archive, .works-awards, .works-career { background: transparent; }
+/* 文字の読みやすさのため、セクションの境目にだけ薄い影を残す */
+.skills, .work, .library, .works-archive, .works-awards, .works-career {
+  background: linear-gradient(to bottom, rgba(9,9,9,.35), transparent 18%, transparent 82%, rgba(9,9,9,.35));
+}
+.system-stage { background: radial-gradient(circle at 50% 55%, rgba(252,238,10,.07), transparent 60%), rgba(10,10,10,.55); }
+.project-card { background: rgba(17,17,17,.82); backdrop-filter: blur(3px); }
+@media (max-width: 800px) {
+  .city { opacity: .85; }
+}
