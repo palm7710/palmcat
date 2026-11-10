@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { categories, posts } from "@/data/content";
+import { formatViewCount, useViewCounts } from "@/features/views/useViewCounts";
 
 export default function BlogPage() {
   const [filter, setFilter] = useState<(typeof categories)[number]>("ALL");
   const visiblePosts =
     filter === "ALL" ? posts : posts.filter((post) => post.category === filter);
   const latestPost = posts[0];
+  const viewCounts = useViewCounts(posts.map((post) => post.no));
 
   useEffect(() => {
     document.title = "THINK / PALM";
@@ -66,7 +68,10 @@ export default function BlogPage() {
                 <p>{post.summary}</p>
               </div>
               <div className="post-action">
-                <span>{post.time} READ</span>
+                <div className="post-stats">
+                  <span>{post.time} READ</span>
+                  <span>{formatViewCount(viewCounts[post.no])} VIEWS</span>
+                </div>
                 <Link to={`/blog/${post.no}`} aria-label={`${post.title}を読む`}>
                   ↗
                 </Link>
