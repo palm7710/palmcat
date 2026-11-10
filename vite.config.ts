@@ -58,6 +58,8 @@ const authorName = 'Palm'
 const twitterHandle = '@59kja'
 const homeTitle = 'PALM — Create Your Own Reality'
 const homeDescription = 'PALM — 技術でまだ見ぬ世界をつくるソフトウェアエンジニアのポートフォリオ。'
+const worksTitle = 'WORKS / PALM — 個人開発・ハッカソン作品集'
+const worksDescription = 'App Storeで配信中のQuoline、技育CAMP最優秀賞のBeGit;など、PALMが個人開発・ハッカソン・長期インターンでつくってきた作品と受賞歴。'
 const blogTitle = 'THINK / PALM — 学びと個人開発の記録'
 const blogDescription = 'ソフトウェア開発、読書、未来思考、個人開発を通して得た学びと問いを記録するPALMのブログ。'
 
@@ -237,6 +239,33 @@ function homeStructuredData() {
   }
 }
 
+function worksStructuredData() {
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'CollectionPage',
+        '@id': `${siteUrl}/works/#page`,
+        url: `${siteUrl}/works/`,
+        name: worksTitle,
+        description: worksDescription,
+        inLanguage: 'ja-JP',
+        author: { '@id': `${siteUrl}/#author` },
+      },
+      {
+        '@type': 'BreadcrumbList',
+        '@id': `${siteUrl}/works/#breadcrumb`,
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'HOME', item: `${siteUrl}/` },
+          { '@type': 'ListItem', position: 2, name: 'WORKS', item: `${siteUrl}/works/` },
+        ],
+      },
+      publisherStructuredData(),
+      authorStructuredData(),
+    ],
+  }
+}
+
 function blogStructuredData() {
   return {
     '@context': 'https://schema.org',
@@ -328,6 +357,7 @@ function buildSitemap(): string {
   const latestDate = posts[0]?.date.replace(/\./g, '-') ?? '2026-11-10'
   const pages = [
     { url: `${siteUrl}/`, lastModified: latestDate },
+    { url: `${siteUrl}/works/`, lastModified: latestDate },
     { url: `${siteUrl}/blog/`, lastModified: latestDate },
     ...posts.map((post) => ({
       url: `${siteUrl}/blog/${post.no}/`,
@@ -398,6 +428,7 @@ function buildLlmsTxt(): string {
 ## Primary pages
 
 - [PALM home](${siteUrl}/): 運営者、スキル、プロジェクト、連絡先を掲載する公式ホームです。
+- [PALM works](${siteUrl}/works/): 個人開発・ハッカソン作品と受賞歴の一覧です。
 - [PALM blog](${siteUrl}/blog/): 開発、読書、未来思考に関する全記事の一覧です。
 - [XML sitemap](${siteUrl}/sitemap.xml): 公開ページの機械可読な一覧です。
 - [RSS feed](${siteUrl}/feed.xml): ブログ更新情報です。
@@ -489,6 +520,19 @@ function seoPages(): Plugin {
           type: 'website',
           imageAlt: '黒猫と蝶をあしらったPALMブログ',
           structuredData: blogStructuredData(),
+        }),
+      })
+
+      this.emitFile({
+        type: 'asset',
+        fileName: 'works/index.html',
+        source: applySeoMetadata(documentShell, {
+          title: worksTitle,
+          description: worksDescription,
+          url: `${siteUrl}/works/`,
+          type: 'website',
+          imageAlt: 'PALMの作品集',
+          structuredData: worksStructuredData(),
         }),
       })
 
