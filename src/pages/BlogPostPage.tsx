@@ -47,6 +47,16 @@ export default function BlogPostPage() {
         </header>
 
         <div className="post-body">
+          <section className="post-key-points" aria-labelledby="post-key-points-title">
+            <span>QUICK ANSWER</span>
+            <h2 id="post-key-points-title">この記事の要点</h2>
+            <ul>
+              {post.keyPoints.map((point) => (
+                <li key={point}>{point}</li>
+              ))}
+            </ul>
+          </section>
+
           {post.body.map((block, index) => {
             if (block.startsWith('## ')) {
               return <h3 key={index}>{block.slice(3)}</h3>
