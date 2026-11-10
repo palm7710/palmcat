@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { posts } from '@/data/content'
+import { formatViewCount, usePostViewCount } from '@/features/views/useViewCounts'
 
 function renderInlineMarkdown(text: string) {
   return text.split(/(\*\*.+?\*\*)/g).map((part, index) => {
@@ -16,6 +17,7 @@ function renderInlineMarkdown(text: string) {
 export default function BlogPostPage() {
   const { postNo } = useParams()
   const post = posts.find((item) => item.no === postNo)
+  const viewCount = usePostViewCount(post?.no)
 
   useEffect(() => {
     if (!post) return
@@ -40,6 +42,7 @@ export default function BlogPostPage() {
             <span>{post.category}</span>
             <time dateTime={post.date.replace(/\./g, '-')}>{post.date}</time>
             <span>{post.time} READ</span>
+            <span aria-live="polite">{formatViewCount(viewCount)} VIEWS</span>
           </div>
           <h1>{post.title}</h1>
           <h2>{post.titleEn}</h2>
