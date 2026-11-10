@@ -2,6 +2,18 @@ export type Skill = {
   no: string
   name: string
   description: string
+  /** システム構成図で対応する層（0: INTERFACE / 1: SERVICE / 2: INFRASTRUCTURE） */
+  layer: 0 | 1 | 2
+}
+
+export type ProjectDevice = {
+  kind: 'iphone' | 'android'
+  /** 画像がない時に表示するモック画面 */
+  mock: 'begit-home' | 'begit-stats' | 'quoline' | 'swift' | 'kotlin'
+  /** 実際のスクリーンショット（例：'/images/work/begit-home.png'）。指定するとモックの代わりに表示 */
+  image?: string
+  /** 画面録画（mp4）。指定すると画面で再生。image は読み込み中の表示に使われる */
+  video?: string
 }
 
 export type Project = {
@@ -11,6 +23,8 @@ export type Project = {
   copy: string
   stack: string
   className: string
+  /** 作品カードに 3D で表示する端末 */
+  devices: ProjectDevice[]
 }
 
 export type Post = {
@@ -27,12 +41,12 @@ export type Post = {
 }
 
 export const skills: Skill[] = [
-  { no: '01', name: 'SWIFT / SWIFTUI', description: 'Native systems, polished interfaces' },
-  { no: '02', name: 'KOTLIN', description: 'Reliable Android experiences' },
-  { no: '03', name: 'GO', description: 'Fast, observable infrastructure' },
-  { no: '04', name: 'C', description: 'Systems close to the machine' },
-  { no: '05', name: 'LINUX', description: 'Systems without abstractions' },
-  { no: '06', name: 'SECURITY / NETWORK', description: 'Secure systems, protocols, and resilient networks' },
+  { no: '01', name: 'SWIFT / SWIFTUI', description: 'Native systems, polished interfaces', layer: 0 },
+  { no: '02', name: 'KOTLIN', description: 'Reliable Android experiences', layer: 0 },
+  { no: '03', name: 'GO', description: 'Fast, observable infrastructure', layer: 1 },
+  { no: '04', name: 'C', description: 'Systems close to the machine', layer: 2 },
+  { no: '05', name: 'LINUX', description: 'Systems without abstractions', layer: 2 },
+  { no: '06', name: 'SECURITY / NETWORK', description: 'Secure systems, protocols, and resilient networks', layer: 2 },
 ]
 
 export const projects: Project[] = [
@@ -43,6 +57,10 @@ export const projects: Project[] = [
     copy: 'Swift・Go・Cloudflare・GitHub APIで開発し、複数のハッカソンで受賞したアプリ。',
     stack: 'Swift · Go · Cloudflare · GitHub API',
     className: 'project-a',
+    devices: [
+      { kind: 'iphone', mock: 'begit-home', image: '/images/work/begit-flow.jpg', video: '/videos/begit-flow.mp4' },
+      { kind: 'iphone', mock: 'begit-stats', image: '/images/work/begit-points.jpg', video: '/videos/begit-points.mp4' },
+    ],
   },
   {
     no: '002',
@@ -51,6 +69,10 @@ export const projects: Project[] = [
     copy: '企画、UI/UX、開発を個人で手がけ、App Storeへリリースしたアプリ。',
     stack: 'Swift · Go · VPS · UI/UX · Google API',
     className: 'project-b',
+    devices: [
+      { kind: 'iphone', mock: 'quoline', image: '/images/work/quoline-home.jpg' },
+      { kind: 'iphone', mock: 'quoline', image: '/images/work/quoline-shelf.jpg' },
+    ],
   },
   {
     no: '003',
@@ -59,6 +81,10 @@ export const projects: Project[] = [
     copy: 'SwiftとKotlinを用いたモバイル開発に継続して携わる長期インターン。',
     stack: 'Swift · Kotlin',
     className: 'project-c',
+    devices: [
+      { kind: 'iphone', mock: 'swift' },
+      { kind: 'android', mock: 'kotlin' },
+    ],
   },
 ]
 
