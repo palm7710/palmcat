@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import {
   AdditiveBlending,
   AmbientLight,
+  BackSide,
   BoxGeometry,
   BufferAttribute,
   BufferGeometry,
@@ -21,16 +22,19 @@ import {
   MeshPhysicalMaterial,
   MeshStandardMaterial,
   Object3D,
+  PlaneGeometry,
+  PMREMGenerator,
   PerspectiveCamera,
   Points,
   PointsMaterial,
   Scene,
   SphereGeometry,
   SRGBColorSpace,
+  type Texture,
   Vector3,
 } from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-import { registerView, reduceMotion } from '@/features/stage/viewStage'
+import { getStageRenderer, registerView, reduceMotion } from '@/features/stage/viewStage'
 import { getEnvironment } from '@/features/stage/environment'
 import { onHighlightLayer } from './bus'
 
@@ -129,11 +133,54 @@ function drawDot() {
   return canvas
 }
 
+/**
+ * 金属・ガラスの映り込み用の環境マップ。
+ * 真っ暗な空間に白いソフトボックスと黄色い縦長ライトを置き、
+ * 板が傾くたびに光の筋が表面を流れるようにします（Blender のシーンと同じ構成）。
+ */
+let reflectionMap: Texture | null = null
+function getReflectionMap(): Texture | null {
+  if (reflectionMap) return reflectionMap
+  const renderer = getStageRenderer()
+  if (!renderer) return null
+  const env = new Scene()
+  const room = new Mesh(new BoxGeometry(20, 20, 20), new MeshBasicMaterial({ color: 0x020202, side: BackSide }))
+  env.add(room)
+  const panel = (w: number, h: number, color: number, intensity: number, x: number, y: number, z: number) => {
+    const material = new MeshBasicMaterial({ color, side: DoubleSide })
+    material.color.multiplyScalar(intensity)
+    const mesh = new Mesh(new PlaneGeometry(w, h), material)
+    mesh.position.set(x, y, z)
+    mesh.lookAt(0, 0, 0)
+    env.add(mesh)
+  }
+  // 上のソフトボックス（ツヤのメインハイライト）
+  panel(7, 2.2, 0xffffff, 5, 0, 8, 2)
+  panel(2.5, 8, 0xffffff, 3, -8, 2, 4)
+  // 黄色い縦長ライト
+  panel(0.5, 9, 0xfcd20a, 8, -4, 1, -8)
+  panel(0.5, 9, 0xfcd20a, 8, 3, 1, -8)
+  panel(0.5, 9, 0xfcd20a, 6, 8, 1, -3)
+  panel(0.4, 7, 0xfcd20a, 6, 7, 0, 6)
+  const pmrem = new PMREMGenerator(renderer)
+  reflectionMap = pmrem.fromScene(env, 0.02).texture
+  pmrem.dispose()
+  env.traverse((object) => {
+    if (object instanceof Mesh) {
+      object.geometry.dispose()
+      ;(object.material as MeshBasicMaterial).dispose()
+    }
+  })
+  // PMREM が scissor 設定を変えるので戻す
+  renderer.setScissorTest(true)
+  return reflectionMap
+}
+
 type LayerObjects = {
   group: Object3D
   nodes: Vector3[]
   glass: MeshPhysicalMaterial
-  edge: MeshBasicMaterial
+  edge: MeshStandardMaterial
   accent: MeshBasicMaterial
   grid: MeshBasicMaterial
   text: MeshBasicMaterial
@@ -166,7 +213,7 @@ export function SystemMap() {
     const rim = new DirectionalLight(YELLOW, 2.4)
     rim.position.set(-4, -2, -3)
     scene.add(key, rim)
-    const envMap = getEnvironment()
+    const envMap = getReflectionMap() ?? getEnvironment()
 
     const rig = new Group()
     scene.add(rig)
@@ -188,36 +235,48 @@ export function SystemMap() {
     const buildLayer = (group: Object3D): LayerObjects => {
       const glass = keep(
         new MeshPhysicalMaterial({
-          color: 0xffffff,
-          roughness: 0.06,
-          metalness: 0,
+          color: 0x0b0b0b,
+          roughness: 0.04,
+          metalness: 0.85,
           transparent: true,
-          opacity: 0.16,
+          opacity: 0.7,
           clearcoat: 1,
-          clearcoatRoughness: 0.04,
+          clearcoatRoughness: 0.02,
           envMap,
-          envMapIntensity: 1.4,
+          envMapIntensity: 2.6,
           depthWrite: false,
           side: DoubleSide,
         }),
       )
-      const edge = keep(new MeshBasicMaterial({ color: YELLOW, transparent: true, toneMapped: false }))
+      const edge = keep(
+        new MeshStandardMaterial({
+          color: YELLOW,
+          metalness: 1,
+          roughness: 0.16,
+          emissive: new Color(YELLOW),
+          emissiveIntensity: 0.45,
+          envMap,
+          envMapIntensity: 2.4,
+          transparent: true,
+        }),
+      )
       const accent = keep(new MeshBasicMaterial({ color: YELLOW, transparent: true, toneMapped: false }))
       const grid = keep(new MeshBasicMaterial({ map: gridTexture, transparent: true, depthWrite: false, toneMapped: false }))
       const text = keep(new MeshBasicMaterial({ color: 0xf5f5f5, transparent: true, toneMapped: false }))
-      const metal = keep(new MeshStandardMaterial({ color: 0xa0a0a0, metalness: 1, roughness: 0.3, envMap }))
+      const metal = keep(new MeshStandardMaterial({ color: 0xc8c8c8, metalness: 1, roughness: 0.12, envMap, envMapIntensity: 3 }))
       const node = keep(
         new MeshPhysicalMaterial({
           color: 0xffd400,
           emissive: new Color(YELLOW),
           emissiveIntensity: 0.08,
-          roughness: 0.05,
-          metalness: 0,
+          roughness: 0.02,
+          metalness: 0.2,
           transparent: true,
           opacity: 0.6,
           clearcoat: 1,
+          clearcoatRoughness: 0.02,
           envMap,
-          envMapIntensity: 1.2,
+          envMapIntensity: 2.4,
         }),
       )
       const nodeLine = keep(new LineBasicMaterial({ color: YELLOW, transparent: true, opacity: 0.9 }))
@@ -411,11 +470,12 @@ export function SystemMap() {
           layer.emphasis += (target - layer.emphasis) * ease
           const e = layer.emphasis
           const base = Math.min(1, e)
-          layer.edge.opacity = Math.min(1, 0.3 + e * 0.6)
+          layer.edge.opacity = Math.min(1, 0.4 + e * 0.6)
+          layer.edge.emissiveIntensity = 0.25 + e * 0.3
           layer.accent.opacity = Math.min(1, 0.25 + e * 0.7)
           layer.grid.opacity = 0.25 + base * 0.75
           layer.text.opacity = Math.min(1, 0.2 + e * 0.8)
-          layer.glass.opacity = 0.08 + base * 0.1
+          layer.glass.opacity = 0.45 + base * 0.3
           layer.node.opacity = 0.3 + base * 0.35
           layer.nodeLine.opacity = Math.min(1, 0.25 + e * 0.6)
           layer.node.emissiveIntensity =
